@@ -1,48 +1,38 @@
 import streamlit as st
-import pickle
+import pandas as pd
 
-# Page config
-st.set_page_config(page_title="Spam Detector", page_icon="📩", layout="centered")
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
 
-# Load model
-model = pickle.load(open("model.pkl", "rb"))
-vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
+st.title("📩 Spam Email Detector")
 
-# Title section
-st.markdown("<h1 style='text-align: center; color: #4CAF50;'>📩 Spam Email Detector</h1>", unsafe_allow_html=True)
+# Load dataset
+df = pd.read_csv("spam.csv")
 
-st.write("")
+X = df["message"]
+y = df["label"]
 
-# Input box inside a styled container
-st.markdown("### Enter your message below:")
+# Train model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-msg = st.text_area("", height=150)
+vectorizer = TfidfVectorizer()
+X_train_vec = vectorizer.fit_transform(X_train)
 
-# Button
-if st.button("Check Message"):
+model = MultinomialNB()
+model.fit(X_train_vec, y_train)
+
+# Input
+msg = st.text_area("Enter message")
+
+if st.button("Predict"):
     if msg.strip() == "":
-        st.warning("Please enter a message")
+        st.warning("Enter a message")
     else:
-        data = vectorizer.transform([msg])
-        result = model.predict(data)[0]
+        msg_vec = vectorizer.transform([msg])
+        prediction = model.predict(msg_vec)[0]
 
-        st.write("")
-
-        # Output styling
-        if result == "spam":
-            st.markdown(
-                "<h2 style='text-align: center; color: red;'>🚨 This is SPAM</h2>",
-                unsafe_allow_html=True
-            )
+        if prediction == "spam":
+            st.error("🚨 SPAM")
         else:
-            st.markdown(
-                "<h2 style='text-align: center; color: green;'>✅ This is NOT SPAM</h2>",
-                unsafe_allow_html=True
-            )
-
-# Footer
-st.write("")
-st.markdown(
-    "<p style='text-align: center; color: gray;'>Built using Machine Learning + Streamlit</p>",
-    unsafe_allow_html=True
-)
+            st.success("✅ NOT SPAM")
