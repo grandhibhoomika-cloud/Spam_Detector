@@ -1,57 +1,28 @@
 import os
-import pickle
 import streamlit as st
+import joblib
 
-# =========================
-# PAGE CONFIG
-# =========================
-st.set_page_config(
-    page_title="Spam Detector",
-    page_icon="📩",
-    layout="centered"
-)
+# Page config
+st.set_page_config(page_title="Spam Detector", page_icon="📩", layout="centered")
 
-# =========================
-# DEBUG SECTION (REMOVE LATER IF YOU WANT CLEAN UI)
-# =========================
-st.write("📁 Current Working Directory:")
-st.write(os.getcwd())
+# Header UI
+st.markdown("<h1 style='text-align:center; color:green;'>📩 Spam Detector</h1>", unsafe_allow_html=True)
+st.markdown("### Check if your message is Spam or Not")
 
-st.write("📂 Files in deployment folder:")
-st.write(os.listdir("."))
-
-# =========================
-# HEADER UI
-# =========================
-st.markdown(
-    "<h1 style='text-align: center; color: #4CAF50;'>📩 Spam Detector</h1>",
-    unsafe_allow_html=True
-)
-
-st.markdown("### Check whether your message is Spam or Not")
-
-# =========================
-# LOAD MODEL SAFELY
-# =========================
+# File paths (IMPORTANT)
 BASE_DIR = os.path.dirname(__file__)
 
 model_path = os.path.join(BASE_DIR, "model.pkl")
 vectorizer_path = os.path.join(BASE_DIR, "vectorizer.pkl")
 
-st.write("🔍 Model Exists:", os.path.exists(model_path))
-st.write("🔍 Vectorizer Exists:", os.path.exists(vectorizer_path))
+# Load model (SAFE METHOD)
+model = joblib.load(model_path)
+vectorizer = joblib.load(vectorizer_path)
 
-model = pickle.load(open(model_path, "rb"))
-vectorizer = pickle.load(open(vectorizer_path, "rb"))
+# Input UI
+msg = st.text_area("✍️ Enter your message", height=150)
 
-# =========================
-# INPUT UI
-# =========================
-msg = st.text_area("✍️ Enter your message:", height=150)
-
-# =========================
-# PREDICTION BUTTON
-# =========================
+# Predict button
 if st.button("🚀 Predict"):
     if msg.strip() == "":
         st.warning("Please enter a message")
@@ -66,8 +37,6 @@ if st.button("🚀 Predict"):
         else:
             st.success("✅ This is NOT SPAM")
 
-# =========================
-# FOOTER
-# =========================
+# Footer
 st.markdown("---")
-st.markdown("Built with ❤️ using Streamlit + Machine Learning")
+st.markdown("Built with ❤️ using Streamlit + ML")
